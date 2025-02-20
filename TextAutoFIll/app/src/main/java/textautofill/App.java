@@ -39,6 +39,10 @@ public class App {
         System.out.println("ITS READ");
 
         ArrayList<String> allWords = trie.traverse();
+        System.out.println(allWords);
+
+        
+
         System.out.println("ENDING");
 
     }
