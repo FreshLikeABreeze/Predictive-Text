@@ -23,12 +23,14 @@ public class DLBTrie implements Dictionary {
         word = word + '^';
 
         for (int i = 0; i < word.length(); i++) {
+            //
+            System.out.println(word.charAt(i));
+            //
             char letter = word.charAt(i);
             currNode = insertNode(currNode, letter);
         }
     }
 
-    /* ADD ALPHABETICAL ORDER */
     // recursive helper for inserting a node
     private DLBNode insertNode(DLBNode node, char letter) {
         DLBNode currNode = node;
@@ -49,12 +51,12 @@ public class DLBTrie implements Dictionary {
         }
 
         // Move down the end of the character sequence
-        if (prevNode == null) {
-            if (currNode.getDown() == null) {
+        if (currNode.getDown() == null) {
+            if (letter == '^') {
+                currNode.setDown(new DLBNode('^'));
+            } else {
                 currNode.setDown(new DLBNode('^'));
             }
-        } else {
-            currNode.setDown(insertNode(currNode.getDown(), letter));
         }
 
         return currNode;
@@ -111,6 +113,7 @@ public class DLBTrie implements Dictionary {
         return true;
     }
 
+    // get list of suggestions and return the top 5 in another list
     public ArrayList<String> suggest() {
         ArrayList<String> suggestions = new ArrayList<>();
 
@@ -134,6 +137,7 @@ public class DLBTrie implements Dictionary {
 
     }
 
+    // recursive suggestion finding in dlb
     private void suggestRec(DLBNode currNode, String word, ArrayList<String> suggest) {
 
         if (currNode == null) {
@@ -162,20 +166,23 @@ public class DLBTrie implements Dictionary {
         if (currNode == null) {
             return;
         }
-        System.out.println("currNode");
+
+        // System.out.println("currNode");
+        // System.out.println(currNode);
+
         // check for '^' on the whole row
         DLBNode checking = currNode;
         while (checking != null) {
 
+            // Check for the end marker '^'
             if (checking.getValue() == '^') {
                 list.add(currentWord);
-                break;
+            } else {
+                traverseRec(checking.getDown(), currentWord + checking.getValue(), list);
             }
 
+            checking = checking.getRight();
         }
-
-        // Traverse down the DLB first to get word
-        traverseRec(currNode.getDown(), currentWord + currNode.getValue(), list);
 
         // When you reach max depth, move to right nodes
         traverseRec(currNode.getRight(), currentWord, list);
