@@ -13,50 +13,53 @@ public class DLBTrie implements Dictionary {
 
     // add new node to DLB Trie
     public void add(String word) {
-        // start at root
-        // check one down for first letter
-        // if not, go right until found letter
-        // if found letter go down and repeat
-        // else insert nodes to finnish the word
+        /*
+         * start at root
+         * check one down for first letter
+         * if not, go right until found letter
+         * if found letter go down and repeat
+         * else insert nodes to finnish the word
+         */
 
         DLBNode currNode = root;
+
+        // append end character
         word = word + '^';
 
         for (int i = 0; i < word.length(); i++) {
             //
-            System.out.println(word.charAt(i));
+            // System.out.println(word.charAt(i));
             //
             char letter = word.charAt(i);
+
             currNode = insertNode(currNode, letter);
         }
     }
 
-    // recursive helper for inserting a node
+    // Helper for inserting a node
     private DLBNode insertNode(DLBNode node, char letter) {
-        DLBNode currNode = node;
+
+        // If down is null, we are not at the end of the word
+        if (node.getDown() == null) {
+
+            // Insert letter down
+            node.setDown(new DLBNode(letter));
+            return node.getDown();
+        }
+
+        DLBNode currNode = node.getDown();
         DLBNode prevNode = null;
 
-        // Traverse through the same level
+        // Traverse right looking if letter is already on that level
         while (currNode != null && currNode.getValue() != letter) {
             prevNode = currNode;
             currNode = currNode.getRight();
         }
 
-        // If node doesnt exist, create a new node
+        // If letter not already on level, insert
         if (currNode == null) {
             currNode = new DLBNode(letter);
-            if (prevNode != null) {
-                prevNode.setRight(currNode);
-            }
-        }
-
-        // Move down the end of the character sequence
-        if (currNode.getDown() == null) {
-            if (letter == '^') {
-                currNode.setDown(new DLBNode('^'));
-            } else {
-                currNode.setDown(new DLBNode('^'));
-            }
+            prevNode.setRight(currNode);
         }
 
         return currNode;
@@ -109,31 +112,36 @@ public class DLBTrie implements Dictionary {
             currNode = currNode.getDown();
 
         }
-        // end of pre reached
+        // End of pre reached
         return true;
     }
 
-    // get list of suggestions and return the top 5 in another list
-    public ArrayList<String> suggest() {
+    // Get list of top 5 suggestions
+    public ArrayList<String> suggest(String prefix) {
         ArrayList<String> suggestions = new ArrayList<>();
 
-        DLBNode currNode = root;
+        // Traverse to the node corresponding to the last character of the prefix
+        DLBNode curr = findNode(prefix);
 
-        String prefix = "";
-        while (currNode != null && currNode.getValue() != '^') {
-            prefix += currNode.getValue();
-            currNode = currNode.getDown();
+        //
+        // curr = findCharAtLevel(root.getDown(), 'b');
+        //
+
+        if (curr == null) {
+            System.out.println("not found");
+            return suggestions;
         }
 
-        suggestRec(currNode, prefix, suggestions);
+        System.out.println("LAST LETTER OF PREFIX: " + curr.getValue());
+
+        // Find suggestions starting from this node
+        suggestRec(curr, prefix, suggestions);
+
+        // Sort suggestions alphabetically
         Collections.sort(suggestions);
 
-        ArrayList<String> suggest5 = new ArrayList<>();
-        for (int i = 0; i < suggestions.size() && i < 5; i++) {
-            suggest5.add(suggestions.get(i));
-        }
-
-        return suggest5;
+        // Return the first 5 suggestions
+        return new ArrayList<>(suggestions.subList(0, Math.min(suggestions.size(), 5)));
 
     }
 
@@ -154,6 +162,38 @@ public class DLBTrie implements Dictionary {
         }
     }
 
+    // Finds a prefix and returns last character node
+    private DLBNode findNode(String prefix) {
+        DLBNode curr = root.getDown();
+
+        for (int i = 0; i < prefix.length(); i++) {
+            curr = findCharAtLevel(curr, prefix.charAt(i));
+
+            if (curr == null) {
+                return null;
+            }
+            if (curr.getDown().getValue() != '^') {
+                curr = curr.getDown();
+            }
+
+        }
+        System.out.println("found node value" + curr.getValue());
+        return curr;
+
+    }
+
+    // Finds node on a level
+    private DLBNode findCharAtLevel(DLBNode node, char ch) {
+        while (node != null) {
+            // System.out.println("checking: " + node.getValue());
+            if (node.getValue() == ch) {
+                return node;
+            }
+            node = node.getRight();
+        }
+        return null;
+    }
+
     // puts the current DLBTrie into arraylists
     public ArrayList<String> traverse() {
         ArrayList<String> list = new ArrayList<>();
@@ -172,16 +212,13 @@ public class DLBTrie implements Dictionary {
 
         // check for '^' on the whole row
         DLBNode checking = currNode;
-        while (checking != null) {
 
-            // Check for the end marker '^'
-            if (checking.getValue() == '^') {
-                list.add(currentWord);
-            } else {
-                traverseRec(checking.getDown(), currentWord + checking.getValue(), list);
-            }
-
-            checking = checking.getRight();
+        // Check for the end marker '^'
+        if (checking.getValue() == '^') {
+            list.add(currentWord);
+            // System.out.println("CURERNT WHOLE FOUND WORD" + currentWord);
+        } else {
+            traverseRec(checking.getDown(), currentWord + checking.getValue(), list);
         }
 
         // When you reach max depth, move to right nodes
