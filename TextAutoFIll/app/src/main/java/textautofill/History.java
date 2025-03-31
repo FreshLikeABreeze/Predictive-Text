@@ -5,11 +5,9 @@ import java.util.*;
 public class History implements Dictionary {
 
     HashMap<String, Integer> hist;
-    String searchChar;
 
     public History() {
         hist = new HashMap<>();
-        searchChar = "";
     }
 
     public void add(String key) {
@@ -29,16 +27,17 @@ public class History implements Dictionary {
         return false;
     }
 
-    public ArrayList<String> suggest() {
+    public ArrayList<String> suggest(String prefix) {
         ArrayList<String> suggestions = new ArrayList<>();
 
         for (String word : hist.keySet()) {
-            if (word.startsWith(searchChar)) {
+            if (word.startsWith(prefix)) {
                 suggestions.add(word);
             }
         }
 
-        suggestions.sort((w1, w2) -> hist.get(w2) - hist.get(w1));// sorts arraylist by frequencty
+        // Alphabetically sort
+        Collections.sort(suggestions);
 
         if (suggestions.size() > 5) {
             ArrayList<String> suggest5 = new ArrayList<>(suggestions.subList(0, 5));
