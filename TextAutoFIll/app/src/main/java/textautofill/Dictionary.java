@@ -10,7 +10,7 @@ interface Dictionary {
 
     public boolean containsPrefix(String pre);
 
-    public ArrayList<String> suggest();
+    public ArrayList<String> suggest(String pre);
 
     public ArrayList<String> traverse();
 
